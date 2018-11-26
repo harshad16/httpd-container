@@ -1,4 +1,4 @@
-FROM centos/s2i-core-centos7
+FROM registry.centos.org/centos/s2i-core-centos7:latest
 
 # Apache HTTP Server image.
 #
