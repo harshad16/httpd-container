@@ -113,6 +113,10 @@ The Apache HTTP Server container image supports the following configuration vari
        By default, httpd logs into standard output, so the logs are accessible by using the docker logs command. When \fB\fCHTTPD\_LOG\_TO\_VOLUME\fR is set, httpd logs into \fB\fC/var/log/httpd24\fR, which can be mounted to host system using the container volumes. This option is only allowed when container is run as UID 0.
 
 .PP
+\fB\fB\fCHTTPD\_MPM\fR\fP
+       The variable \fB\fCHTTPD\_MPM\fR can be set to change the default Multi\-Processing Module (MPM) from the package default MPM.
+
+.PP
 If you want to run the image and mount the log files into \fB\fC/wwwlogs\fR on the host
 as a container volume, execute the following command:
 
@@ -121,6 +125,18 @@ as a container volume, execute the following command:
 
 .nf
 $ docker run \-d \-u 0 \-e HTTPD\_LOG\_TO\_VOLUME=1 \-\-name httpd \-v /wwwlogs:/var/log/httpd24:Z rhscl/httpd\-24\-rhel7
+
+.fi
+.RE
+
+.PP
+To run an image using the \fB\fCevent\fR MPM (rather than the default \fB\fCprefork\fR), execute the following command:
+
+.PP
+.RS
+
+.nf
+$ docker run \-d \-e HTTPD\_MPM=event \-\-name httpd rhscl/httpd\-24\-rhel7
 
 .fi
 .RE
