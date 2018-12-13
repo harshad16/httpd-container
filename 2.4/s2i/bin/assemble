@@ -36,7 +36,10 @@ if releases.status_code == 200:
             elif asset_name == "tensorflow_model_server":
                  pass  # TODO
             elif os.path.join(release_path, asset["name"]) not in wheels_check:
-                wheel_file_path = os.path.join(release_path, asset["name"])
+                wheel_file_path = os.path.join(
+                    release_path, asset["name"].replace("-linux_", "-manylinux1_")
+                )
+
                 r = requests.get(asset.get("browser_download_url"), stream=True)
                 if r.status_code == 200:
                     with open(wheel_file_path, "wb") as f:
