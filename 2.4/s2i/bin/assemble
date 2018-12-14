@@ -16,6 +16,7 @@ import urllib
 import shutil
 import requests
 from bs4 import BeautifulSoup
+
 wheels_check = []
 sort_wheels = {}
 releases = requests.get("https://api.github.com/repos/AICoE/tensorflow-wheels/releases")
@@ -23,7 +24,11 @@ if releases.status_code == 200:
     for release in releases.json():
         release_name = release.get("name").replace("1.9/", "")
         osver = release.get("name").split("/")[0]
-        release_path = os.path.join(os.getcwd(), "index", release_name, "simple/tensorflow/")
+        release_path = os.path.join(
+            os.getcwd(), "index", release_name, "simple/tensorflow/"
+        )
+
+        print(f"processing release {release_name}")
         if not os.path.exists(release_path):
             try:
                 os.makedirs(release_path)
@@ -31,15 +36,18 @@ if releases.status_code == 200:
                 continue
         for asset in release.get("assets", []):
             asset_name = asset.get("name")
-            if asset_name == "build_info.yaml":
+            if asset_name == "build_info.yaml" or asset_name == "build_info.json":
+                print("ignoring build_info.{yaml|json}")
                 continue
             elif asset_name == "tensorflow_model_server":
-                 pass  # TODO
+                print("ignoring tensorflow_model_server")
+                continue  # TODO
             elif os.path.join(release_path, asset["name"]) not in wheels_check:
                 wheel_file_path = os.path.join(
                     release_path, asset["name"].replace("-linux_", "-manylinux1_")
                 )
 
+                print(f"  processing {wheel_file_path} - {asset_name}")
                 r = requests.get(asset.get("browser_download_url"), stream=True)
                 if r.status_code == 200:
                     with open(wheel_file_path, "wb") as f:
@@ -49,7 +57,11 @@ if releases.status_code == 200:
                 py_vr = re.search(r"\d+", py_vr).group(0)
                 py_vr = ".".join(list(py_vr))
                 wheels_check.append(wheel_file_path)
-                sort_wheels[py_vr + "-" + release_name] = [osver, py_vr, wheel_file_path]
+                sort_wheels[py_vr + "-" + release_name] = [
+                    osver,
+                    py_vr,
+                    wheel_file_path,
+                ]
 END
 cp -Rf /tmp/src/. ./
 
