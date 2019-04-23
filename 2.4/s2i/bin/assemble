@@ -10,51 +10,43 @@ config_s2i
 
 echo "---> pulling artifacts from GitHub"
 python << END
-import re
 import os
-import urllib
 import shutil
 import requests
-from bs4 import BeautifulSoup
 wheels_check = []
-sort_wheels = {}
-releases = requests.get("https://api.github.com/repos/AICoE/tensorflow-wheels/releases")
-if releases.status_code == 200:
-    for release in releases.json():
-        release_name = release.get("name").replace("1.9/", "")
-        osver = release.get("name").split("/")[0]
-        release_path = os.path.join(
-            os.getcwd(), "index", release_name, "simple/tensorflow/"
-        )
-        if not os.path.exists(release_path):
-            try:
-                os.makedirs(release_path)
-            except Exception as e:
-                continue
-        for asset in release.get("assets", []):
-            asset_name = asset.get("name")
-            if asset_name == "build_info.yaml" or asset_name == "build_info.json":
-                continue
-            elif asset_name == "tensorflow_model_server":
-                continue  # TODO
-            elif os.path.join(release_path, asset["name"]) not in wheels_check:
+base_path = "https://api.github.com/repos/AICoE/tensorflow-wheels/releases"
+while base_path:
+    releases = requests.get(base_path)
+    for next_link in releases.headers.get("Link").split(","):
+        if 'rel="next"' in next_link.split(";")[1]:
+            base_path = next_link.split(";")[0].strip("< >")
+            break
+        base_path = None
+    if releases.status_code == 200:
+        for release in releases.json():
+            release_name = release.get("name")
+            osver = release.get("name").split("/")[0]
+            release_path = os.path.join(
+                os.getcwd(), "index", release_name, "simple/tensorflow/"
+            )
+            for asset in release.get("assets", []):
+                asset_name = asset.get("name")
                 wheel_file_path = os.path.join(
                     release_path, asset["name"].replace("-linux_", "-manylinux1_")
                 )
-                r = requests.get(asset.get("browser_download_url"), stream=True)
-                if r.status_code == 200:
-                    with open(wheel_file_path, "wb") as f:
-                        r.raw.decode_content = True
-                        shutil.copyfileobj(r.raw, f)
-                py_vr = re.search(r"cp\d+", asset_name).group(0)
-                py_vr = re.search(r"\d+", py_vr).group(0)
-                py_vr = ".".join(list(py_vr))
-                wheels_check.append(wheel_file_path)
-                sort_wheels[py_vr + "-" + release_name] = [
-                    osver,
-                    py_vr,
-                    wheel_file_path,
-                ]
+                if asset_name == "build_info.yaml" or asset_name == "build_info.json":
+                    continue
+                elif asset_name == "tensorflow_model_server":
+                    continue  # TODO
+                elif wheel_file_path not in wheels_check:
+                    if not os.path.exists(release_path):
+                        os.makedirs(release_path)
+                    r = requests.get(asset.get("browser_download_url"), stream=True)
+                    if r.status_code == 200:
+                        with open(wheel_file_path, "wb") as f:
+                            r.raw.decode_content = True
+                            shutil.copyfileobj(r.raw, f)
+                    wheels_check.append(wheel_file_path)
 END
 cp -Rf /tmp/src/. ./
 
