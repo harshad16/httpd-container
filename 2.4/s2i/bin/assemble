@@ -31,6 +31,18 @@ while base_path:
             )
             for asset in release.get("assets", []):
                 asset_name = asset.get("name")
+                branch_endpoint = "simple/tensorflow/"
+                if "tensorflow_serving_api" in asset_name:
+                    if "cpu" in release.get("tag_name"):
+                        branch_endpoint = "jemalloc/simple/tensorflow-serving-api/"
+                    # TODO: HotFix, Not the best solution as cuda version can change!
+                    elif "gpu" in release.get("tag_name"):
+                        branch_endpoint = (
+                            "cuda10.0+jemalloc/simple/tensorflow-serving-api/"
+                        )
+                release_path = os.path.join(
+                    os.getcwd(), "index", release_name, branch_endpoint
+                )
                 wheel_file_path = os.path.join(
                     release_path, asset["name"].replace("-linux_", "-manylinux1_")
                 )
