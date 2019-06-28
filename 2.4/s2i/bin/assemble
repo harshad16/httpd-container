@@ -31,6 +31,9 @@ while base_path:
                 osver = tf_release_attr[0]
             for asset in release.get("assets", []):
                 asset_name = asset.get("name")
+                # HotFix: Need to remove later, once fixed on AICOE/tensorflow-wheels
+                if 'torch' in asset_name:
+                    continue
                 branch_endpoint = "simple/tensorflow/"
                 if "tensorflow_serving_api" in asset_name:
                     if "cpu" in release.get("tag_name"):
