@@ -24,11 +24,11 @@ while base_path:
         base_path = None
     if releases.status_code == 200:
         for release in releases.json():
-            release_name = release.get("name")
-            osver = release.get("name").split("/")[0]
-            release_path = os.path.join(
-                os.getcwd(), "index", release_name, "simple/tensorflow/"
-            )
+            tf_release_attr = release.get("name").split("/")
+            if len(tf_release_attr) > 2:
+                osver = "/".join([tf_release_attr[0],tf_release_attr[2]])
+            else:
+                osver = tf_release_attr[0]
             for asset in release.get("assets", []):
                 asset_name = asset.get("name")
                 branch_endpoint = "simple/tensorflow/"
@@ -41,7 +41,7 @@ while base_path:
                             "cuda10.0+jemalloc/simple/tensorflow-serving-api/"
                         )
                 release_path = os.path.join(
-                    os.getcwd(), "index", release_name, branch_endpoint
+                    os.getcwd(), "index", osver, branch_endpoint
                 )
                 wheel_file_path = os.path.join(
                     release_path, asset["name"].replace("-linux_", "-manylinux1_")
