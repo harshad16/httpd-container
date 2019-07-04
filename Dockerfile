@@ -39,6 +39,10 @@ RUN yum install -y yum-utils && \
     rpm -V $INSTALL_PKGS && \
     yum clean all
 
+RUN yum install -y python-pip && \
+    pip install requests && \
+    yum clean all
+
 ENV HTTPD_CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/httpd/ \
     HTTPD_APP_ROOT=${APP_ROOT} \
     HTTPD_CONFIGURATION_PATH=${APP_ROOT}/etc/httpd.d \
