@@ -18,10 +18,10 @@ CentOS versions currently supported are:
 
 This repository has the Custom **assemble** script for performing additional requirements.
 
-- Assemble script: Downloads wheel files from releases of AICoE/tensorflow-wheels repository and updates the index.html with list of wheel files.
+- Assemble script: Downloads wheel files from releases of AICoE/tensorflow-wheels repository and updates the index.html with the list of wheel files.
 - The Apache HTTP Server image is built with the centos7 Dockerfile and push to quay.io/aicoe repository.
 
-Developer can deploy and run the httpd-aicoe-container Apache HTTP Server image for the AICoE/tensorflow-wheels respository using following commands:
+A developer can deploy and run the httpd-aicoe-container Apache HTTP Server image for the AICoE/tensorflow-wheels repository using following commands:
 
 1. Fetch the image from quay.io : `oc tag quay.io/aicoe/s2i-httpd-tensorflow-index:latest s2i-httpd-tensorflow-index:latest`
 2. Start the application: `oc new-app s2i-httpd-tensorflow-index~https://github.com/AICoE/tensorflow-wheels.git` -this will start bc(assemble), dc(run).
@@ -47,7 +47,7 @@ Developer can deploy and run the httpd-aicoe-container Apache HTTP Server image 
    $ make build TARGET=centos7 VERSIONS=2.4
   ```
 
-For using other versions of Apache HTTP Server, just replace the `2.4` value by particular version in the commands above.
+For using other versions of Apache HTTP Server, just replace the `2.4` value by a particular version in the commands above.
 
 **Notice: By omitting the `VERSIONS` parameter, the build/test action will be performed on all provided versions of Apache HTTP Server, which must be specified in `VERSIONS` variable. This variable must be set to a list with possible versions (subdirectories).**
 
