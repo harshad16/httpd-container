@@ -38,7 +38,9 @@ while base_path:
                     continue
                 branch_endpoint = "simple/tensorflow/"
                 if "tensorflow_serving_api" in asset_name:
-                    if "cpu" in release.get("tag_name"):
+                    if "jemalloc" in osver:
+                        branch_endpoint = "simple/tensorflow-serving-api/"
+                    elif "cpu" in release.get("tag_name"):
                         branch_endpoint = "jemalloc/simple/tensorflow-serving-api/"
                     # TODO: HotFix, Not the best solution as cuda version can change!
                     elif "gpu" in release.get("tag_name"):
