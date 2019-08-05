@@ -11,6 +11,7 @@ config_s2i
 echo "---> pulling artifacts from GitHub"
 python << END
 import os
+import re
 import shutil
 import requests
 wheels_check = []
@@ -25,16 +26,20 @@ while base_path:
     if releases.status_code == 200:
         for release in releases.json():
             tf_release_attr = release.get("name").split("/")
+            r = re.compile("([a-zA-Z]+)([0-9.]+)")
+            if tf_release_attr[0] != "centos6":
+                tf_release_attr[0] = "/".join(r.match(tf_release_attr[0]).groups())
+            else:
+                tf_release_attr[0] = "manylinux2010"
             if len(tf_release_attr) > 2:
-                osver = "/".join([tf_release_attr[0],tf_release_attr[2]])
+                osver = "/".join([tf_release_attr[0], tf_release_attr[2]])
             else:
                 osver = tf_release_attr[0]
-            # manylinux2010 whls are released to centos6 tag
-            osver = osver.replace('centos6','manylinux2010')
+            if "manylinux2010" not in osver:
+                osver = "/".join(["os", osver])
             for asset in release.get("assets", []):
                 asset_name = asset.get("name")
-                # HotFix: Need to remove later, once fixed on AICOE/tensorflow-wheels
-                if 'torch' in asset_name:
+                if "torch" in asset_name:
                     continue
                 branch_endpoint = "simple/tensorflow/"
                 if "tensorflow_serving_api" in asset_name:
