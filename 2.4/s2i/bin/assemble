@@ -50,9 +50,9 @@ while base_path:
                 release_path = os.path.join(
                     os.getcwd(), "index", osver, branch_endpoint
                 )
-                wheel_file_path = os.path.join(
-                    release_path, asset["name"].replace("-linux_", "-manylinux1_")
-                )
+                if "manylinux2010" not in osver:
+                    asset["name"] = asset["name"].replace("-linux_", "-manylinux1_")
+                wheel_file_path = os.path.join(release_path, asset["name"])
                 if asset_name == "build_info.yaml" or asset_name == "build_info.json":
                     continue
                 elif asset_name == "tensorflow_model_server":
