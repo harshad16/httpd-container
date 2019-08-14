@@ -57,6 +57,8 @@ while base_path:
                     continue
                 elif asset_name == "tensorflow_model_server":
                     continue  # TODO
+                elif ".rpm" in asset_name:
+                    continue  # TODO
                 elif wheel_file_path not in wheels_check:
                     if not os.path.exists(release_path):
                         os.makedirs(release_path)
