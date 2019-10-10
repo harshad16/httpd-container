@@ -28,43 +28,49 @@ while base_path:
             tf_release_attr = release.get("name").split("/")
             r = re.compile("([a-zA-Z]+)([0-9.]+)")
             if tf_release_attr[0] != "centos6":
-                tf_release_attr[0] = "/".join(r.match(tf_release_attr[0]).groups())
+                osver = "/".join(r.match(tf_release_attr[0]).groups())
             else:
-                tf_release_attr[0] = "manylinux2010"
-            if len(tf_release_attr) > 2:
-                osver = "/".join([tf_release_attr[0], tf_release_attr[2]])
-            else:
-                osver = tf_release_attr[0]
-            if "manylinux2010" not in osver:
-                osver = "/".join(["os", osver])
+                osver = "manylinux2010"
             for asset in release.get("assets", []):
                 asset_name = asset.get("name")
-                if "torch" in asset_name:
-                    continue
                 branch_endpoint = "simple/tensorflow/"
-                if "tensorflow_serving_api" in asset_name:
-                    if "jemalloc" in osver:
-                        branch_endpoint = "simple/tensorflow-serving-api/"
-                    elif "cpu" in release.get("tag_name"):
-                        branch_endpoint = "jemalloc/simple/tensorflow-serving-api/"
-                    # TODO: HotFix, Not the best solution as cuda version can change!
+                if asset_name in [
+                    "bazel",
+                    "build_info.yaml",
+                    "build_info.json",
+                    "tensorflow_model_server",
+                ]:
+                    continue
+                elif ".rpm" in asset_name or "torch" in asset_name:
+                    continue
+                elif "tensorflow_serving_api" in asset_name:
+                    if "cpu" in release.get("tag_name"):
+                        branch_endpoint = "tensorflow/simple/tensorflow-serving-api/"
                     elif "gpu" in release.get("tag_name"):
                         branch_endpoint = (
-                            "cuda10.0+jemalloc/simple/tensorflow-serving-api/"
+                            "tensorflow-gpu/simple/tensorflow-serving-api/"
                         )
+                elif "tensorflow" in asset_name:
+                    if tf_release_attr[1] == "2.0":
+                        if "gpu" in release.get("tag_name"):
+                            branch_endpoint = "tensorflow-gpu/simple/tensorflow/"
+                        else:
+                            branch_endpoint = "tensorflow-cpu/simple/tensorflow/"
+                    elif tf_release_attr[1] > "2.0":
+                        if "gpu" in release.get("tag_name"):
+                            branch_endpoint = "tensorflow/simple/tensorflow/"
+                        else:
+                            branch_endpoint = "tensorflow-cpu/simple/tensorflow/"
+                    else:
+                        branch_endpoint = "tensorflow/simple/tensorflow/"
+                if "manylinux2010" not in osver:
+                    asset["name"] = asset["name"].replace("-linux_", "-manylinux1_")
+                    osver = "/".join(["os", osver])
                 release_path = os.path.join(
                     os.getcwd(), "index", osver, branch_endpoint
                 )
-                if "manylinux2010" not in osver:
-                    asset["name"] = asset["name"].replace("-linux_", "-manylinux1_")
                 wheel_file_path = os.path.join(release_path, asset["name"])
-                if asset_name == "build_info.yaml" or asset_name == "build_info.json":
-                    continue
-                elif asset_name == "tensorflow_model_server":
-                    continue  # TODO
-                elif ".rpm" in asset_name:
-                    continue  # TODO
-                elif wheel_file_path not in wheels_check:
+                if wheel_file_path not in wheels_check:
                     if not os.path.exists(release_path):
                         os.makedirs(release_path)
                     r = requests.get(asset.get("browser_download_url"), stream=True)
