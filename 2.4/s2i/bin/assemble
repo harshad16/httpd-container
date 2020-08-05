@@ -32,6 +32,7 @@ while base_path:
                 osver = tf_release_attr[0]
             else:
                 continue
+
             for asset in release.get("assets", []):
                 asset_name = asset.get("name")
                 branch_endpoint = "AVX2/simple/tensorflow/"
@@ -49,6 +50,8 @@ while base_path:
                 elif "tensorflow" in asset_name:
                     if "gpu" in release.get("tag_name"):
                         branch_endpoint = "AVX2/simple/tensorflow-gpu/"
+                    elif "cpu" in release.get("tag_name"):
+                        branch_endpoint = "AVX2/simple/tensorflow-cpu/"
                     else:
                         branch_endpoint = "AVX2/simple/tensorflow/"
                 release_path = os.path.join(
