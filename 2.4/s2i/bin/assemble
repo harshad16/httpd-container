@@ -47,16 +47,8 @@ while base_path:
                 elif "tensorflow_serving_api" in asset_name:
                     branch_endpoint = "AVX2/simple/tensorflow-serving-api/"
                 elif "tensorflow" in asset_name:
-                    if "2.0" in tf_release_attr[1]:
-                        if "gpu" in release.get("tag_name"):
-                            branch_endpoint = "AVX2/simple/tensorflow-gpu/"
-                        else:
-                            branch_endpoint = "AVX2/simple/tensorflow/"
-                    elif tf_release_attr[1] > "2.0" or "1.15" in tf_release_attr[1]:
-                        if "gpu" in release.get("tag_name"):
-                            branch_endpoint = "AVX2/simple/tensorflow/"
-                        else:
-                            branch_endpoint = "AVX2/simple/tensorflow-cpu/"
+                    if "gpu" in release.get("tag_name"):
+                        branch_endpoint = "AVX2/simple/tensorflow-gpu/"
                     else:
                         branch_endpoint = "AVX2/simple/tensorflow/"
                 release_path = os.path.join(
